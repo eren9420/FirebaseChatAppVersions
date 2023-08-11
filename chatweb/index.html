@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyCSKST5NML1mWe3zf-76j9CZXw_9Sgr_Yg",
+        authDomain: "chatweb-c6950.firebaseapp.com",
+        projectId: "chatweb-c6950",
+        storageBucket: "chatweb-c6950.appspot.com",
+        messagingSenderId: "863805166613",
+        appId: "1:863805166613:web:1437b3d471107656a36a1c",
+        measurementId: "G-YP5D8T0MXH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+
+</script>
+
+<body>
+<div id="wrapper">
+    <div id="menu">
+        <p class="welcome">WHATS'UP <br><br>
+        </p>
+
+        <!-- mesaj gostermek icin liste yani chatbox yarat --->
+
+        <div id="chatbox">
+            <ul id="messages">
+
+            </ul>
+        </div>
+    </div>
+    <form onsubmit="return sendMessage();">
+        <input type="text" id="message" class="usermsg" size="63" placeholder="Mesajınızı buraya yazın!"
+               autocomplete="off" />
+        <input type="submit" name="" class="button">
+    </form>
+</div>
+</body>
+<script>
+    let myName = prompt("ENTER YOUR NAME")
+
+    const sendMessage =()  =>{
+        let message=document.getElementById("message").value
+        firebase.database().ref("messages").push().set({
+            "sender": myName,
+            "message": message
+        });
+        let message1=document.getElementById("message")
+        message1.value=""
+        return false;
+        
+    }
+</script>
+</html>
