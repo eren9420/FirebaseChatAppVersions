@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div id="wrapper">
+    <div id="menu">
+        <p class="welcome">WHATS'UP OF <span id="isim"></span><br><br></p>
+        <div id="chatbox">
+            <ul id="mesajlar"></ul>
+        </div>
+    </div>
+    <form id="messageForm">
+        <input type="text" id="message" class="usermessage" size="63" placeholder="Mesajınızı buraya yazın!"
+               autocomplete="off" />
+        <input type="submit" name="" class="button">
+    </form>
+</div>
+
+<script type="module">
+    // Function to get the user's name
+    function getName() {
+        let myName = localStorage.getItem("chatUserName");
+        if (!myName) {
+            myName = prompt("İsminizi Giriniz");
+            if (!myName) {
+                myName = "Misafir";
+            }
+            localStorage.setItem("chatUserName", myName);
+        }
+        return myName;
+    }
+
+    // Get user's name and update the chatbox header
+    let myName = getName();
+    document.getElementById("isim").innerText = myName;
+
+    // Firebase SDK imports and configuration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"; // Import the "remove" function
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-analytics.js";
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v9.0.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyAQB3osiayYHKxhI6x-4eNtHvZcoZPrzbI",
+        authDomain: "chatapplication-4424e.firebaseapp.com",
+        databaseURL: "https://chatapplication-4424e-default-rtdb.firebaseio.com",
+        projectId: "chatapplication-4424e",
+        storageBucket: "chatapplication-4424e.appspot.com",
+        messagingSenderId: "901599001541",
+        appId: "1:901599001541:web:f1c7fb54312f97efdb69ac",
+        measurementId: "G-S00MDBKJ98"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase();
+    const messagesRef = ref(database, "messages");
+
+    // Function to send a message
+    const sendMessage = (event) => {
+        event.preventDefault();
+        let message = document.getElementById("message").value;
+        push(messagesRef, {
+            "sender": myName,
+            "message": message
+        });
+        let messageInput = document.getElementById("message");
+        messageInput.value = "";
+        return false;
+    }
+
+
+    const deleteMessage = (button) => {
+        var messageKey = button.getAttribute("data-id");
+        const messageRef = ref(messagesRef, messageKey);
+        console.log("geldim");
+        // Remove the message from the database
+        remove(messageRef)
+            .then(() => {
+                console.log("Message successfully deleted.");
+            })
+            .catch((error) => {
+                console.error("Error deleting message:", error);
+            });
+    }
+
+    // Listen for new messages and update the chatbox
+
+    // Limit the number of displayed messages
+    const MAX_MESSAGES = 1000;
+
+    // Listen for new messages and update the chatbox
+
+
+    // Set focus to the input field on page load
+    document.getElementById("message").focus();
+
+    // Add event listener to the message form
+
+    document.getElementById("messageForm").addEventListener("submit", sendMessage);
+    document.getElementById("messageForm").addEventListener("Delete", deleteMessage);
+
+
+
+    function displayDeletedMessageNotification() {
+        var html = "<li class='deleted-message'>Message deleted</li>";
+        document.getElementById("mesajlar").innerHTML += html;
+    }
+    function listenForMessages() {
+        onValue(messagesRef, function (snapshot) {
+            const messages = snapshot.val();
+            const messageKeys = Object.keys(messages);
+
+            const sortedMessages = messageKeys.map(key => ({
+                key: key,
+                ...messages[key]
+            })).reverse();
+
+            document.getElementById("mesajlar").innerHTML = "";
+
+            const displayMessages = sortedMessages.slice(0, Math.min(MAX_MESSAGES, sortedMessages.length));
+
+            for (const message of displayMessages) {
+                var html = "<li>";
+                html += "<b>" + message.sender + ":</b> " + message.message;
+
+                if (message.sender === myName) {
+                    html += "<button data-id='" + message.key + "' onclick='deleteMessage(this);'>Delete</button>";
+                }
+
+                html += "</li>";
+                document.getElementById("mesajlar").innerHTML += html;
+            }
+        });
+        console.log("Message listener is active.");
+    }
+
+    listenForMessages();
+    // Listen for new messages and update the chatbox
+    onValue(messagesRef, function (snapshot) {
+        const messages = snapshot.val();
+        const messageKeys = Object.keys(messages);
+
+        // Sort messages by time or use messageKeys directly if they are already sorted
+        const sortedMessages = messageKeys.map(key => messages[key]).reverse();
+
+        document.getElementById("mesajlar").innerHTML = ""; // Clear the chatbox first
+
+        // Display a maximum of MAX_MESSAGES or all available messages if less than MAX_MESSAGES
+        const displayMessages = sortedMessages.slice(0, Math.min(MAX_MESSAGES, sortedMessages.length));
+
+        for (const message of displayMessages) {
+            var html = "<li>";
+            html += "<b>" + message.sender + ":</b> " + message.message; // Display sender's name
+
+            // Add the "delete" button for the user's own messages
+            if (message.sender === myName) {
+                html += "<button data-id='" + message.key + "' onclick='deleteMessage(this);'>Delete</button>";
+            }
+
+            html += "</li>";
+            document.getElementById("mesajlar").innerHTML += html;
+        }
+    });
+
+</script>
+</body>
+
+</html>
